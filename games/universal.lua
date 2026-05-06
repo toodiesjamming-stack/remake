@@ -4058,6 +4058,8 @@ run(function()
 	local BoundingBox
 	local Filled
 	local HealthBar
+	local HealthBarColor
+	local HealthBarColorToggle
 	local Name
 	local DisplayName
 	local Background
@@ -4073,12 +4075,18 @@ run(function()
 		return Vector2.new(newpos.X, newpos.Y)
 	end
 
+	local function getHealthBarColor(ent)
+		if HealthBarColorToggle and HealthBarColorToggle.Enabled and HealthBarColor then
+			return Color3.fromHSV(HealthBarColor.Hue, HealthBarColor.Sat, HealthBarColor.Value)
+		end
+		return Color3.fromHSV(math.clamp(ent.Health / ent.MaxHealth, 0, 1) / 2.5, 0.89, 0.75)
+	end
+
 	local ESPAdded = {
 		Drawing2D = function(ent)
 			if not Targets.Players.Enabled and ent.Player then return end
 			if not Targets.NPCs.Enabled and ent.NPC then return end
 			if Teammates.Enabled and (not ent.Targetable) and (not ent.Friend) then return end
-			if ent.Player and getAccountTier and getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0 then return end
 			if vape.ThreadFix then
 				setthreadidentity(8)
 			end
@@ -4109,7 +4117,7 @@ run(function()
 				EntityESP.HealthLine = Drawing.new('Line')
 				EntityESP.HealthLine.Thickness = 1
 				EntityESP.HealthLine.ZIndex = 2
-				EntityESP.HealthLine.Color = Color3.fromHSV(math.clamp(ent.Health / ent.MaxHealth, 0, 1) / 2.5, 0.89, 0.75)
+				EntityESP.HealthLine.Color = getHealthBarColor(ent)
 				EntityESP.HealthBorder = Drawing.new('Line')
 				EntityESP.HealthBorder.Thickness = 3
 				EntityESP.HealthBorder.Transparency = 0.35
@@ -4145,7 +4153,6 @@ run(function()
 			if not Targets.Players.Enabled and ent.Player then return end
 			if not Targets.NPCs.Enabled and ent.NPC then return end
 			if Teammates.Enabled and (not ent.Targetable) and (not ent.Friend) then return end
-			if ent.Player and getAccountTier and getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0 then return end
 			if vape.ThreadFix then
 				setthreadidentity(8)
 			end
@@ -4175,7 +4182,6 @@ run(function()
 			if not Targets.Players.Enabled and ent.Player then return end
 			if not Targets.NPCs.Enabled and ent.NPC then return end
 			if Teammates.Enabled and (not ent.Targetable) and (not ent.Friend) then return end
-			if ent.Player and getAccountTier and getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0 then return end
 			if vape.ThreadFix then
 				setthreadidentity(8)
 			end
@@ -4229,7 +4235,7 @@ run(function()
 				end
 
 				if EntityESP.HealthLine then
-					EntityESP.HealthLine.Color = Color3.fromHSV(math.clamp(ent.Health / ent.MaxHealth, 0, 1) / 2.5, 0.89, 0.75)
+					EntityESP.HealthLine.Color = getHealthBarColor(ent)
 				end
 
 				if EntityESP.Text then
@@ -4500,6 +4506,8 @@ run(function()
 			BoundingBox.Object.Visible = (val == '2D')
 			Filled.Object.Visible = (val == '2D')
 			HealthBar.Object.Visible = (val == '2D')
+			HealthBarColorToggle.Object.Visible = (val == '2D') and HealthBar.Enabled
+			HealthBarColor.Object.Visible = (val == '2D') and HealthBar.Enabled and HealthBarColorToggle.Enabled
 			Name.Object.Visible = (val == '2D')
 			DisplayName.Object.Visible = Name.Object.Visible and Name.Enabled
 			Background.Object.Visible = Name.Object.Visible and Name.Enabled
@@ -4544,13 +4552,42 @@ run(function()
 	})
 	HealthBar = ESP:CreateToggle({
 		Name = 'Health Bar',
-		Function = function()
+		Function = function(callback)
 			if ESP.Enabled then
 				ESP:Toggle()
 				ESP:Toggle()
 			end
+			HealthBarColorToggle.Object.Visible = callback
+			HealthBarColor.Object.Visible = callback and HealthBarColorToggle.Enabled
 		end,
 		Darker = true
+	})
+	HealthBarColorToggle = ESP:CreateToggle({
+		Name = 'Custom Health Color',
+		Function = function(callback)
+			HealthBarColor.Object.Visible = callback
+			for ent, EntityESP in Reference do
+				if EntityESP.HealthLine then
+					EntityESP.HealthLine.Color = getHealthBarColor(ent)
+				end
+			end
+		end,
+		Darker = true,
+		Visible = false
+	})
+	HealthBarColor = ESP:CreateColorSlider({
+		Name = 'Health Bar Color',
+		Function = function(hue, sat, val)
+			if not HealthBarColorToggle.Enabled then return end
+			local color = Color3.fromHSV(hue, sat, val)
+			for _, EntityESP in Reference do
+				if EntityESP.HealthLine then
+					EntityESP.HealthLine.Color = color
+				end
+			end
+		end,
+		Darker = true,
+		Visible = false
 	})
 	Name = ESP:CreateToggle({
 		Name = 'Name',
