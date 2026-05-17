@@ -2196,7 +2196,7 @@ run(function()
 		if (ent.Health or 0) <= 0 then return false end
 		local dist = (ent.RootPart.Position - entitylib.character.RootPart.Position).Magnitude
 		if dist > Distance.Value then return false end
-		if getAccountTier(ent.Player) >= 1 and getAccountTier(ent.Player) < 99 and getAccountTier(lplr) == 0 then return false end
+		if getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0 then return false end
 		return true
 	end
 
@@ -2846,7 +2846,7 @@ run(function()
                 playerFound = findPlayer(label, container)
             end
             if not playerFound then return end
-            if getAccountTier(playerFound) >= 4 and getAccountTier(playerFound) < 99 and getAccountTier(lplr) == 0 then return end
+            if getAccountTier(playerFound) >= 4 and getAccountTier(lplr) == 0 then return end
             
             container.Name = playerFound.Name
             local card = container:FindFirstChild("1") and container["1"]:FindFirstChild("MatchDraftPlayerCard")
@@ -2905,7 +2905,7 @@ run(function()
             if not userId then return end
             local plr = playersService:GetPlayerByUserId(tonumber(userId))
             if not plr then return end
-            if getAccountTier(plr) >= 4 and getAccountTier(plr) < 99 and getAccountTier(lplr) == 0 then return end
+            if getAccountTier(plr) >= 4 and getAccountTier(lplr) == 0 then return end
             local loopKey = plr.UserId
             processedPlayers[loopKey] = true
             if activeConnections[loopKey] then activeConnections[loopKey]:Disconnect() activeConnections[loopKey] = nil end
@@ -4790,11 +4790,13 @@ run(function()
         local t4plr = _atkPlr
         if t4ok and t4plr then
             local targetTier = getAccountTier(t4plr)
-            if targetTier >= 4 and targetTier < 99 and getAccountTier(lplr) == 0 then
+            if targetTier == 4 and getAccountTier(lplr) == 0 then
                 local uid = t4plr.UserId
                 local now = tick()
                 if _t4LastHit[uid] and now - _t4LastHit[uid] < (10/32) then return end
                 _t4LastHit[uid] = now
+			elseif targetTier == 99 and getAccountTier(lplr) == 0 then
+				return
             end
         end
 
@@ -6798,11 +6800,14 @@ run(function()
 									local suc, plr = pcall(function() return playersService:GetPlayerFromCharacter(v.Character) end)
 									if suc and plr then
 										local targetTier = getAccountTier(plr)
-										if targetTier >= 4 and targetTier < 99 and getAccountTier(lplr) == 0 then
+										if targetTier == 4 and getAccountTier(lplr) == 0 then
 											local uid = plr.UserId
 											local now = tick()
 											if _t4LastHit[uid] and now - _t4LastHit[uid] < (10/32) then continue end
 											_t4LastHit[uid] = now
+										elseif targetTier == 99 and getAccountTier(lplr) == 0 then
+											task.wait((1/UpdateRate.Value))
+											continue
 										end
 									end
 								end
@@ -7319,7 +7324,7 @@ run(function()
             if not Targets.Players.Enabled and ent.Player then continue end
             if (not Targets.NPCs or not Targets.NPCs.Enabled) and ent.NPC then continue end
             if not ent.Targetable then continue end
-			if ent.Player and getAccountTier(ent.Player) >= 1 and getAccountTier(ent.Player) < 99 and getAccountTier(lplr) == 0 then continue end
+			if ent.Player and getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0 then continue end
             if not ent.Character or not ent.RootPart or not ent.RootPart.Parent then continue end
 
             local delta = ent.RootPart.Position - originPos
@@ -9487,7 +9492,7 @@ run(function()
                 end
             end
 
-            if Rank.Enabled and ent.Player and not (getAccountTier(ent.Player) >= 1 and getAccountTier(ent.Player) < 99 and getAccountTier(lplr) == 0) then
+            if Rank.Enabled and ent.Player and not (getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0) then
                 local rankIcon = Instance.new('ImageLabel')
                 rankIcon.Name = 'RankIcon'
                 rankIcon.Size = udim2fromOffset(30, 30)
@@ -9520,7 +9525,7 @@ run(function()
                 end)
             end
 
-            if GloopIndicator and GloopIndicator.Enabled and ent.Character and not (ent.Player and getAccountTier(ent.Player) >= 1 and getAccountTier(ent.Player) < 99 and getAccountTier(lplr) == 0) then
+            if GloopIndicator and GloopIndicator.Enabled and ent.Character and not (ent.Player and getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0) then
                 local gloopIcon = Instance.new('ImageLabel')
                 gloopIcon.Name = 'GloopIcon'
                 gloopIcon.Size = udim2fromOffset(24, 24)
@@ -9550,7 +9555,7 @@ run(function()
                 end)
             end
 
-            if Enchant.Enabled and ent.Player and ent.Character and not (getAccountTier(ent.Player) >= 1 and getAccountTier(ent.Player) < 99 and getAccountTier(lplr) == 0) then
+            if Enchant.Enabled and ent.Player and ent.Character and not (getAccountTier(ent.Player) >= 1 and getAccountTier(lplr) == 0) then
                 local Icon = Instance.new('ImageLabel')
                 Icon.Name = 'EnchantIcon'
                 Icon.Size = udim2fromOffset(30, 30)
@@ -15187,7 +15192,7 @@ run(function()
         local _bpUserId = v:GetAttribute('PlacedByUserId')
         if _bpUserId then
             local _bpOk, _bpOwner = pcall(function() return playersService:GetPlayerByUserId(_bpUserId) end)
-            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(_bpOwner) < 99 and getAccountTier(lplr) == 0 then return end
+            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(lplr) == 0 then return end
         end
         
         local billboard = Instance.new('BillboardGui')
@@ -15671,8 +15676,10 @@ run(function()
 		local target, path, endpos = bedwars.breakBlock(v, Effect.Enabled, Animation.Enabled, wrappedHealthbar, InstantBreak.Enabled or AutoTool.Enabled)
 		if path and ShowPath and ShowPath.Enabled then
 			local placerTier = getPlacerTier(v)
-			if placerTier == 4 and placerTier < 99 and getAccountTier(lplr) == 0 then
+			if placerTier == 4 and getAccountTier(lplr) == 0 then
 				task.wait(0.65 + math.random() * 0.4)  
+			elseif placerTier >= 99 and getAccountTier(lplr) == 0 then
+				task.wait(9e9)
 			end
 			local currentnode = target
 			for _, part in parts do
@@ -19080,7 +19087,7 @@ run(function()
     local function CreatePlayerTag(plr, isLocal)
         if not OGNametags or not OGNametags.Enabled then return end
         if isLocal and HideOwnNametag and HideOwnNametag.Enabled then return end
-        if not isLocal and getAccountTier(plr) >= 4 and getAccountTier(plr) < 99 and getAccountTier(lplr) == 0 then return end
+        if not isLocal and getAccountTier(plr) >= 4 and getAccountTier(lplr) == 0 then return end
 
         local char = plr.Character
         if not char then return end
@@ -19395,7 +19402,7 @@ run(function()
         local _bpUserId = v:GetAttribute('PlacedByUserId')
         if _bpUserId then
             local _bpOk, _bpOwner = pcall(function() return playersService:GetPlayerByUserId(_bpUserId) end)
-            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(_bpOwner) < 99 and getAccountTier(lplr) == 0 then return end
+            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(lplr) == 0 then return end
         end
         
         local billboard = Instance.new('BillboardGui')
@@ -21889,7 +21896,7 @@ run(function()
         local _bpUserId = v:GetAttribute('PlacedByUserId')
         if _bpUserId then
             local _bpOk, _bpOwner = pcall(function() return playersService:GetPlayerByUserId(_bpUserId) end)
-            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(_bpOwner) < 99 and getAccountTier(lplr) == 0 then return end
+            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4  and getAccountTier(lplr) == 0 then return end
         end
         
         local billboard = Instance.new('BillboardGui')
@@ -22288,7 +22295,7 @@ run(function()
         local _bpUserId = v:GetAttribute('PlacedByUserId')
         if _bpUserId then
             local _bpOk, _bpOwner = pcall(function() return playersService:GetPlayerByUserId(_bpUserId) end)
-            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(_bpOwner) < 99 and getAccountTier(lplr) == 0 then return end
+            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(lplr) == 0 then return end
         end
         
         local billboard = Instance.new('BillboardGui')
@@ -25780,7 +25787,7 @@ run(function()
         local _bpUserId = v:GetAttribute('PlacedByUserId')
         if _bpUserId then
             local _bpOk, _bpOwner = pcall(function() return playersService:GetPlayerByUserId(_bpUserId) end)
-            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(_bpOwner) < 99 and getAccountTier(lplr) == 0 then return end
+            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(lplr) == 0 then return end
         end
         
         local billboard = Instance.new('BillboardGui')
@@ -26951,7 +26958,7 @@ run(function()
                 end
             end
 
-            if getAccountTier(plr) >= 1 and getAccountTier(plr) < 99 and getAccountTier(lplr) == 0 then return end
+            if getAccountTier(plr) >= 1 and getAccountTier(lplr) == 0 then return end
             local playerName = getPlayerName(plr)
             local teamName = getTeamName(plr)
             local loot = string.format("%d irons, %d diamonds, %d emeralds", I, D, E)
@@ -26983,7 +26990,7 @@ run(function()
                         local difference = currentCandy - data.lastCandy
 
                         if difference > 0 and data.player then
-                            if not (getAccountTier(data.player) >= 1 and getAccountTier(data.player) < 99 and getAccountTier(lplr) == 0) then
+                            if not (getAccountTier(data.player) >= 1 and getAccountTier(lplr) == 0) then
                                 local playerName = getPlayerName(data.player)
                                 local teamName = getTeamName(data.player)
 
@@ -27002,7 +27009,7 @@ run(function()
                         local timeSincePlaced = tick() - (data.placedTime or tick())
 
                         if timeSincePlaced > 2 then
-                            if not (getAccountTier(data.player) >= 1 and getAccountTier(data.player) < 99 and getAccountTier(lplr) == 0) then
+                            if not (getAccountTier(data.player) >= 1 and getAccountTier(lplr) == 0) then
                                 local playerName = getPlayerName(data.player)
                                 local teamName = getTeamName(data.player)
 
@@ -28020,7 +28027,7 @@ run(function()
 							if currentplr and currentplr.Team == lplr.Team then return end
 						end
 						local _fishChar = playersService:GetPlayerFromCharacter(char)
-					if _fishChar and getAccountTier(_fishChar) >= 4 and getAccountTier(_fishChar) < 99 and getAccountTier(lplr) == 0 then return end
+					if _fishChar and getAccountTier(_fishChar) >= 4 and getAccountTier(lplr) == 0 then return end
 						notif("FishermanSpy", str .. " caught a " .. strfish .. lootText, 8)
 					end))
 				end)
@@ -28093,7 +28100,7 @@ run(function()
         local ownerName = getBeehiveOwnerName(beehive)
 		local owner = getBeehiveOwner(beehive)
 		if not owner then return end
-		if getAccountTier(owner) >= 1 and getAccountTier(owner) < 99 and getAccountTier(lplr) == 0 then return end
+		if getAccountTier(owner) >= 1 and getAccountTier(lplr) == 0 then return end
 
         local billboard = Instance.new('BillboardGui')
         billboard.Parent = BeehiveFolder
@@ -28350,7 +28357,7 @@ run(function()
                 end
             end
 
-            if getAccountTier(plr) >= 1 and getAccountTier(plr) < 99 and getAccountTier(lplr) == 0 then return end
+            if getAccountTier(plr) >= 1  and getAccountTier(lplr) == 0 then return end
             local playerName = getPlayerName(plr)
             local teamName   = getTeamName(plr)
             local loot = string.format("%d irons, %d diamonds, %d emeralds", I, D, E)
@@ -28399,7 +28406,7 @@ run(function()
                     if data.exists and data.player then
                         local timeSincePlaced = tick() - (data.placedTime or tick())
                         if timeSincePlaced > 2 then
-                            if not (getAccountTier(data.player) >= 1 and getAccountTier(data.player) < 99 and getAccountTier(lplr) == 0) then
+                            if not (getAccountTier(data.player) >= 1 and getAccountTier(lplr) == 0) then
                             local playerName = getPlayerName(data.player)
                             local teamName   = getTeamName(data.player)
                             vape:CreateNotification(
@@ -31226,7 +31233,7 @@ run(function()
 					_saT4HitCount[uid] = 0
 				end
 				_saT4HitCount[uid] = (_saT4HitCount[uid] or 0) + 1
-				if _saT4HitCount[uid] > 32 then return end
+				if _saT4HitCount[uid] > 26 then return end
 			end
 			if not select(2, whitelist:get(_atkPlr)) then return end
 		end
@@ -31818,7 +31825,7 @@ run(function()
         local _bpUserId = v:GetAttribute('PlacedByUserId')
         if _bpUserId then
             local _bpOk, _bpOwner = pcall(function() return playersService:GetPlayerByUserId(_bpUserId) end)
-            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(_bpOwner) < 99 and getAccountTier(lplr) == 0 then return end
+            if _bpOk and _bpOwner and getAccountTier(_bpOwner) >= 4 and getAccountTier(lplr) == 0 then return end
         end
         
         local billboard = Instance.new('BillboardGui')
@@ -33444,7 +33451,7 @@ run(function()
                         })
 
                         if target then
-							if getAccountTier(target.Player) >= 1 and getAccountTier(target.Player) < 99 and getAccountTier(lplr) == 0 then continue end
+							if getAccountTier(target.Player) >= 1 and getAccountTier(lplr) == 0 then continue end
                             local selfpos = entitylib.character.RootPart.Position
                             local localfacing = entitylib.character.RootPart.CFrame.LookVector * Vector3.new(1, 0, 1)
                             local delta = (target.RootPart.Position - selfpos) * Vector3.new(1, 0, 1)
