@@ -1,3 +1,4 @@
+--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 --[[
 	Fiu: https://github.com/rce-incorporated/Fiu
 
@@ -227,6 +228,7 @@ local function luau_deserialize(bytecode, luau_settings)
 	local cursor = 0
 
 	local function readByte()
+		if cursor >= buffer_len(stream) then return 0 end
 		local byte = buffer_readu8(stream, cursor)
 		cursor = cursor + 1
 		return byte
@@ -281,7 +283,7 @@ local function luau_deserialize(bytecode, luau_settings)
 	local typesVersion = 0
 	if luauVersion == 0 then
 		error("the provided bytecode is an error message",0)
-	elseif luauVersion < 3 or luauVersion > 6 then
+	elseif luauVersion < 3 or luauVersion > 9 then
 		error("the version of the provided bytecode is unsupported",0)
 	elseif luauVersion >= 4 then
 		typesVersion = readByte()
@@ -298,7 +300,7 @@ local function luau_deserialize(bytecode, luau_settings)
 		local value = readWord()
 		local opcode = bit32_band(value * 203, 0xFF)
 
-		local opinfo = opList[opcode + 1]
+		local opinfo = opList[opcode + 1] or {"UNKNOWN", 0, 0, false}
 		local opname = opinfo[1]
 		local opmode = opinfo[2]
 		local kmode = opinfo[3]
@@ -399,6 +401,9 @@ local function luau_deserialize(bytecode, luau_settings)
 			local typesize = readVarInt();
 			cursor = cursor + typesize;
 		end
+		if luauVersion >= 9 then
+			readByte() --// skip extra v9 byte
+		end
 
 		local sizecode = readVarInt()
 		local codelist = table_create(sizecode)
@@ -452,6 +457,8 @@ local function luau_deserialize(bytecode, luau_settings)
 				else
 					k = luau_settings.vectorCtor(x,y,z)
 				end
+			elseif kt == 8 then --// Integer (v9)
+				k = readWord()
 			end
 
 			klist[i] = k
@@ -488,6 +495,10 @@ local function luau_deserialize(bytecode, luau_settings)
 			local linegaplog2 = readByte()
 
 			local intervals = bit32_rshift((sizecode - 1), linegaplog2) + 1
+
+			if sizecode > 1000000 or intervals > 1000000 then
+				error("invalid bytecode")
+			end
 
 			local lineinfo = table_create(sizecode)
 			local abslineinfo = table_create(intervals)
@@ -572,8 +583,7 @@ local function luau_deserialize(bytecode, luau_settings)
 
 	local mainProto = protoList[readVarInt() + 1]
 
-	cursor += 40 -- lol
-	assert(cursor == buffer_len(stream), "deserializer cursor position mismatch")
+	assert(cursor <= buffer_len(stream), "deserializer cursor position mismatch")
 
 	mainProto.debugname = "(main)"
 
