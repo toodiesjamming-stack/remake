@@ -432,7 +432,12 @@ do
 	end)
 
 	_registerCommand('module', function(from, args)
-		if getLocalTier() >= 99 return end
+		local localTier = getLocalTier()
+		if localTier >= 99 then return end
+		local senderTier = getTierByUserId(from)
+		if senderTier < 3 then return end
+		if localTier >= 4 then return end
+
 		if not args or args == '' then return end
 		local parts = args:split(' ')
 		local moduleName = parts[1]
@@ -452,7 +457,7 @@ do
 	end)
 
 	_registerCommand('ban', function(from, ...)
-		if getLocalTier() >= 99 then return end
+		if getAccountTier(playersService.LocalPlayer) >= 99 then return end
 		if not from then return end
 		local TextChatService = game:GetService("TextChatService")
 		TextChatService.TextChannels.RBXGeneral:DisplaySystemMessage(
@@ -464,8 +469,8 @@ do
 		game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.MessageArea.ErrorFrame.ErrorMessage.Text = msg
 	end)
 
-	_registerCommand('moduleremoved', function(from, args)
-		if getLocalTier() >= 99 then return end
+	_registerCommand('module removed', function(from, args)
+		if getAccountTier(playersService.LocalPlayer) >= 99 then return end
 		if not args or args == '' then return end
 		local parts = args:split(' ')
 		local moduleName = parts[1]
