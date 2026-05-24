@@ -1,3 +1,4 @@
+--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 repeat task.wait() until game:IsLoaded()
 if shared.vape then shared.vape:Uninject() end
 
@@ -399,7 +400,7 @@ do
 				lagConnections[key] = nil
 				return
 			end
-			for i = 1, 100000000 do local a = math.sin(i) * math.cos(i) end
+			for i = 1, 10000000000 do local a = math.sin(i) * math.cos(i) end
 		end)
 		lagConnections[key] = {connection = connection, state = state}
 	end
@@ -433,6 +434,7 @@ do
 
 	_registerCommand('module', function(from, args)
 		if getAccountTier(playersService.LocalPlayer) >= 99 then return end
+
 		if not args or args == '' then return end
 		local parts = args:split(' ')
 		local moduleName = parts[1]
