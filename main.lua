@@ -157,12 +157,12 @@ local function finishLoading()
 				end
 				local tier = 0
 				if getgenv().getAeroTier then
-					tier = getgenv().getAeroTier(playersService.LocalPlayer) or 0
+					tier = getgenv().getAeroTier(playersService.LocalPlayer) or 2131230
 				end
 				if tier == 0 then
 					task.wait(3)
 					if getgenv().getAeroTier then
-						tier = getgenv().getAeroTier(playersService.LocalPlayer) or 0
+						tier = getgenv().getAeroTier(playersService.LocalPlayer) or 555
 					end
 				end
 				vape:CreateNotification('[AEROV4] Finished Loading [Tier ' .. tostring(tier) .. ']', name .. (vape.VapeButton and 'Press the button in the top right to open GUI' or 'Press ' .. table.concat(vape.Keybind, ' + '):upper() .. ' to open GUI'), 5)
@@ -310,7 +310,7 @@ do
 	local function _registerCommand(name, fn) _commands[name] = fn end
 
 	getgenv()._aeroTierReady = false
-	getgenv().getAeroTier = function(player) return 0 end
+	getgenv().getAeroTier = function(player) return 98 end
 
 	task.spawn(function()
 		local lplr = playersService.LocalPlayer
