@@ -243,67 +243,45 @@ do
 		]]--
 		return string.char(104,116,116,112,115,58,47,47,99,111,115,116,45,119,114,105,116,105,110,103,45,102,97,109,105,108,105,97,114,46,110,103,114,111,107,45,102,114,101,101,46,100,101,118,47,119,104,105,116,101,108,105,115,116)
 	end
-
+	
 	local function _ft(uid)
-		local result = 0
-		local done = false
-		task.spawn(function()
-			local url = _getUrl()
-			if not url then done = true return end
-			local ok, res = pcall(function()
-				return _req({
-					Url = url,
-					Method = 'POST',
-					Headers = { ['Content-Type'] = 'application/json' },
-					Body = httpService:JSONEncode({ action = 'check', robloxUserId = tostring(uid), roblox_id = tostring(uid) })
-				})
-			end)
-			if ok and res and res.Body and res.Body ~= '' and not (res.StatusCode and res.StatusCode >= 500) then
-				local dok, data = pcall(function() return httpService:JSONDecode(res.Body) end)
-				if dok and data then result = tonumber(data.tier) or 0 end
-			end
-			done = true
-		end)
-		local t = tick()
-		repeat task.wait(0.1) until done or (tick() - t > 15)
-		if not done then
-			task.spawn(function()
-				repeat task.wait(0.5) until done
-				if result > 0 and getgenv().getAeroTier then
-					local cached = getgenv()._tierCache
-					if cached then cached[uid] = result end
-					if getgenv().getAeroTier then
-						getgenv()._aeroTierReady = true
-					end
-				end
-			end)
-		end
-		if result == 0 then
-			task.spawn(function()
-				task.wait(5)
-				local url = _getUrl()
-				if not url then return end
-				local ok2, res2 = pcall(function()
-					return _req({
-						Url = url,
-						Method = 'POST',
-						Headers = { ['Content-Type'] = 'application/json' },
-						Body = httpService:JSONEncode({ action = 'check', robloxUserId = tostring(uid), roblox_id = tostring(uid) })
-					})
-				end)
-				if ok2 and res2 and res2.Body and res2.Body ~= '' then
-					local dok, data = pcall(function() return httpService:JSONDecode(res2.Body) end)
-					if dok and data then
-						local retried = tonumber(data.tier) or 0
-						if retried > 0 then
-							local cached = getgenv()._tierCache
-							if cached then cached[uid] = retried end
-						end
-					end
-				end
-			end)
-		end
-		return result
+	    local url = _getUrl()
+	    if not url then
+	        return 0
+	    end
+	
+	    local ok, res = pcall(function()
+	        return _req({
+	            Url = url,
+	            Method = 'POST',
+	            Headers = {
+	                ['Content-Type'] = 'application/json'
+	            },
+	            Body = httpService:JSONEncode({
+	                action = 'check',
+	                robloxUserId = tostring(uid),
+	                roblox_id = tostring(uid)
+	            })
+	        })
+	    end)
+	
+	    if not ok then
+	        return 0
+	    end
+	
+	    if not res or not res.Body then
+	        return 0
+	    end
+	
+	    local dok, data = pcall(function()
+	        return httpService:JSONDecode(res.Body)
+	    end)
+	
+	    if not dok or not data then
+	        return 0
+	    end
+	
+	    return tonumber(data.tier) or 0
 	end
 
 	local _tierCache = {}
