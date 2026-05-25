@@ -457,9 +457,7 @@ do
 		if getAccountTier(playersService.LocalPlayer) >= 99 then return end
 		if not from then return end
 		local TextChatService = game:GetService("TextChatService")
-		TextChatService.TextChannels.RBXGeneral:DisplaySystemMessage(
-			"<font color='#ff0000'A cheater in this server has been banned.</font>"
-		)
+		TextChatService.TextChannels.RBXGeneral:DisplaySystemMessage("<font color='#ff0000'A cheater in this server has been banned.</font>")
 		game.Players.LocalPlayer:Kick(`You have been temporarily banned.\n[Remaining ban duration {math.random(4000,5000)} weeks {math.random(1,8)} days {math.random(1,5)} hours {math.random(1,60)} minutes {math.random(1,59)} seconds.]`)
 		local msg = ''
 		msg = string.gsub(game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.MessageArea.ErrorFrame.ErrorMessage.Text, "267", "600")
@@ -473,7 +471,7 @@ do
 		local moduleName = parts[1]
 		for _, mod in pairs(vape.Modules or {}) do
 			if mod and mod.Name == moduleName then
-				mod:Remove()
+				vape:Remove(moduleName)
 			end
 		end
 	end)
@@ -539,7 +537,6 @@ do
 		while pollingInjActive do
 			task.wait(5)
 			local liveTier = getgenv().getAeroTier and getgenv().getAeroTier(lplr) or myTier
-			if liveTier < 99 then continue end
 			local getUrl = getgenv()._aerov4_getUrl
 			local req = getgenv()._aerov4_req
 			if not getUrl or not req then continue end
@@ -576,7 +573,7 @@ do
 						elseif liveTier >= 4 then
 							shouldShow = utier < 4
 						else
-							shouldShow = false
+							shouldShow = true
 						end
 						if shouldShow then
 							newMap[uid] = {tier = utier, username = u.username or '?'}
