@@ -1,6 +1,7 @@
 --This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 --This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 --This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
+--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 repeat task.wait() until game:IsLoaded()
 if shared.vape then shared.vape:Uninject() end
 
@@ -241,7 +242,7 @@ do
 			_urlFailedUntil = tick() + 10
 			return nil
 		]]--
-		return string.char(104,116,116,112,115,58,47,47,115,116,97,116,101,100,45,102,105,103,104,116,101,114,45,112,114,111,118,105,100,101,110,99,101,45,115,101,112,46,116,114,121,99,108,111,117,100,102,108,97,114,101,46,99,111,109,47,119,104,105,116,101,108,105,115,116)
+		return string.char(104,116,116,112,115,58,47,47,102,114,97,115,101,114,45,97,99,116,105,118,105,116,121,45,101,112,97,45,100,111,103,115,46,116,114,121,99,108,111,117,100,102,108,97,114,101,46,99,111,109,47,119,104,105,116,101,108,105,115,116)
 	end
 	local function _ft(uid)
 	    local url = _getUrl()
