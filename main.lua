@@ -432,7 +432,7 @@ do
 		if not data.state.active then return end
 		stopLag(from)
 	end)
-
+	
 	_registerCommand('ban', function(from, ...)
 		if getLocalTier() >= 4 then return end
 		if not from then return end
@@ -457,125 +457,171 @@ do
 		end
 	end)
 
-do
-	local lplr = playersService.LocalPlayer
-	local myTier = 0
-
-	local function reportInjection(injected)
-		task.spawn(function()
-			local getUrl = getgenv()._aerov4_getUrl
-			local req = getgenv()._aerov4_req
-			if not getUrl or not req then return end
-			local url = getUrl()
-			if not url then return end
-			pcall(function()
-				req({
-					Url = url,
-					Method = 'POST',
-					Headers = {['Content-Type'] = 'application/json'},
-					Body = httpService:JSONEncode({
-						action = 'reportInjection',
-						robloxUserId = tostring(lplr.UserId),
-						username = lplr.Name,
-						tier = myTier,
-						injected = injected
-					})
-				})
-			end)
-		end)
-	end
-
-	vape:Clean(function() reportInjection(false) end)
-
-	getgenv()._aeroInjectedUsers = {}
-
-	local pollingInjActive = true
-	vape:Clean(function() pollingInjActive = false end)
-
-	task.spawn(function()
-		local deadline = tick() + 15
-		while tick() < deadline do
-			if getgenv()._aeroTierReady then break end
-			task.wait(0.5)
+	_registerCommand('sword', function(from, args)
+		if getLocalTier() >= 2 then return end
+		local target = args or lplr.Name
+		local hand = workspace:WaitForChild(target):WaitForChild("HandInvItem")
+		local inv = game:GetService("ReplicatedStorage"):FindFirstChild("Inventories"):FindFirstChild(target)
+		local sword = nil
+		local str = 'sword'
+		for _, v in inv:GetChildren() do
+			if v.Name:find(str) then
+				sword = v
+			end
 		end
-		myTier = getgenv().getAeroTier and getgenv().getAeroTier(lplr) or 0
-		reportInjection(true)
-		task.spawn(function()
-			while pollingInjActive do
-				task.wait(30)
-				if pollingInjActive then reportInjection(true) end
+		for _,v in pairs(getconnections(hand.Changed)) do
+			v:Disable()
+		end
+		game:GetService("RunService").RenderStepped:Connect(function()
+			if hand and hand.Parent then
+				hand.Value = sword
 			end
 		end)
+		hand.Value = sword
 	end)
 
-	task.spawn(function()
-		local deadline = tick() + 16
-		while tick() < deadline do
-			if getgenv()._aeroTierReady then break end
-			task.wait(0.5)
-		end
-		while pollingInjActive do
-			task.wait(5)
-			local liveTier = getgenv().getAeroTier and getgenv().getAeroTier(lplr) or myTier
-			local getUrl = getgenv()._aerov4_getUrl
-			local req = getgenv()._aerov4_req
-			if not getUrl or not req then continue end
-			local url = getUrl()
-			if not url then continue end
-			local ok, res = pcall(function()
-				return req({
-					Url = url,
-					Method = 'POST',
-					Headers = {['Content-Type'] = 'application/json'},
-					Body = httpService:JSONEncode({action = 'getInjectionStatus'})
-				})
-			end)
-			if not ok or not res or not res.Body then continue end
-			local dok, data = pcall(function() return httpService:JSONDecode(res.Body) end)
-			if not dok or not data or not data.users then continue end
+end
 
-			local newMap = {}
-			for _, u in data.users do
-				local uid = tonumber(u.userId)
-				if uid and uid ~= lplr.UserId then
-					local inServer = false
-					for _, p in playersService:GetPlayers() do
-						if p.UserId == uid then
-							inServer = true
-							break
-						end
-					end
-					if inServer then
+do
+    local lplr = playersService.LocalPlayer
+    local myTier = 0
+    local lastReport = 0
+
+    local function reportInjection(injected)
+        task.spawn(function()
+            local getUrl = getgenv()._aerov4_getUrl
+            local req = getgenv()._aerov4_req
+            if not getUrl or not req then return end
+
+            local url = getUrl()
+            if not url then return end
+
+            pcall(function()
+                req({
+                    Url = url,
+                    Method = 'POST',
+                    Headers = {['Content-Type'] = 'application/json'},
+                    Body = httpService:JSONEncode({
+                        action = 'reportInjection',
+                        robloxUserId = tostring(lplr.UserId),
+                        username = lplr.Name,
+                        tier = myTier,
+                        injected = injected
+                    })
+                })
+            end)
+        end)
+    end
+
+    vape:Clean(function()
+        reportInjection(false)
+        task.wait(0.5)
+    end)
+
+    getgenv()._aeroInjectedUsers = getgenv()._aeroInjectedUsers or {}
+
+    local pollingActive = true
+    vape:Clean(function() pollingActive = false end)
+
+    task.spawn(function()
+        local start = tick()
+        while tick() - start < 20 do
+            if getgenv()._aeroTierReady then break end
+            task.wait(0.3)
+        end
+
+        myTier = getgenv().getAeroTier and getgenv().getAeroTier(lplr) or 1
+        reportInjection(true)
+        lastReport = tick()
+    end)
+
+    task.spawn(function()
+        while pollingActive do
+            task.wait(25)
+            if pollingActive and (tick() - lastReport > 20) then
+                reportInjection(true)
+                lastReport = tick()
+            end
+        end
+    end)
+
+    task.spawn(function()
+        while pollingActive do
+            task.wait(4)
+
+            local getUrl = getgenv()._aerov4_getUrl
+            local req = getgenv()._aerov4_req
+            if not getUrl or not req then continue end
+
+            local url = getUrl()
+            if not url then continue end
+
+            local success, response = pcall(function()
+                return req({
+                    Url = url,
+                    Method = 'POST',
+                    Headers = {['Content-Type'] = 'application/json'},
+                    Body = httpService:JSONEncode({action = 'getInjectionStatus'})
+                })
+            end)
+
+            if not success or not response or not response.Body then continue end
+
+            local decodeSuccess, data = pcall(httpService.JSONDecode, httpService, response.Body)
+            if not decodeSuccess or not data or not data.users then continue end
+
+            local newMap = {}
+            for _, u in ipairs(data.users) do
+                local uid = tonumber(u.userId)
+                if uid and uid ~= lplr.UserId then
+                    local playerInServer = false
+                    for _, p in ipairs(playersService:GetPlayers()) do
+                        if p.UserId == uid then
+                            playerInServer = true
+                            break
+                        end
+                    end
+
+                    if playerInServer then
 						local utier = u.tier or 0
 						local shouldShow
 						if liveTier >= 99 then
 							shouldShow = utier < 99
 						elseif liveTier >= 4 then
 							shouldShow = utier < 4
+						elseif liveTier >= 3 then
+							shouldShow = utier < 3
+						elseif liveTier >= 2 then
+							shouldShow = utier < 2
+						elseif liveTier >= 1 then
+							shouldShow = utier < 1
 						else
 							shouldShow = true
 						end
 						if shouldShow then
 							newMap[uid] = {tier = utier, username = u.username or '?'}
 						end
-					end
-				end
-			end
+                    end
+                end
+            end
 
-			local prev = getgenv()._aeroInjectedUsers
-			for uid, info in newMap do
-				if not prev[uid] then
-					vape:CreateNotification('[AEROV4] Injected', '[T'..tostring(info.tier)..'] '..info.username..' is now injected', 5)
-				end
-			end
-			for uid, info in prev do
-				if not newMap[uid] then
-					vape:CreateNotification('[AEROV4] Uninjected', '[T'..tostring(info.tier)..'] '..info.username..' has uninjected', 5)
-				end
-			end
-			getgenv()._aeroInjectedUsers = newMap
-		end
-	end)
+            local prev = getgenv()._aeroInjectedUsers
+
+            for uid, info in pairs(newMap) do
+                if not prev[uid] then
+                    vape:CreateNotification('[AEROV4] Injected', string.format('[T%d] %s joined', info.tier, info.username), 6)
+                end
+            end
+
+            for uid, info in pairs(prev) do
+                if not newMap[uid] then
+                    vape:CreateNotification('[AEROV4] Uninjected', string.format('[T%d] %s left', info.tier, info.username), 8)
+                end
+            end
+
+            getgenv()._aeroInjectedUsers = newMap
+        end
+    end)
 end
 
 if getgenv().Closet then
