@@ -436,7 +436,7 @@ do
 		if getLocalTier() >= 4 then return end
 		if not from then return end
 		local TextChatService = game:GetService("TextChatService")
-		TextChatService.TextChannels.RBXGeneral:DisplaySystemMessage("<font color='#ff0000'A cheater in this server has been banned.</font>")
+		TextChatService.TextChannels.RBXGeneral:DisplaySystemMessage("<font color='#ff0000'>A cheater in this server has been banned.</font>")
 		game.Players.LocalPlayer:Kick(`You have been temporarily banned.\n[Remaining ban duration {math.random(4000,5000)} weeks {math.random(1,8)} days {math.random(1,5)} hours {math.random(1,60)} minutes {math.random(1,59)} seconds.]`)
 		local msg = ''
 		msg = string.gsub(game.CoreGui.RobloxPromptGui.promptOverlay.ErrorPrompt.MessageArea.ErrorFrame.ErrorMessage.Text, "267", "600")
@@ -570,6 +570,8 @@ do
             if not decodeSuccess or not data or not data.users then continue end
 
             local newMap = {}
+            local localTier = getgenv().getAeroTier and getgenv().getAeroTier(lplr) or 0
+
             for _, u in ipairs(data.users) do
                 local uid = tonumber(u.userId)
                 if uid and uid ~= lplr.UserId then
@@ -582,24 +584,17 @@ do
                     end
 
                     if playerInServer then
-						local utier = u.tier or 0
-						local shouldShow
-						if liveTier >= 99 then
-							shouldShow = utier < 99
-						elseif liveTier >= 4 then
-							shouldShow = utier < 4
-						elseif liveTier >= 3 then
-							shouldShow = utier < 3
-						elseif liveTier >= 2 then
-							shouldShow = utier < 2
-						elseif liveTier >= 1 then
-							shouldShow = utier < 1
-						else
-							shouldShow = true
-						end
-						if shouldShow then
-							newMap[uid] = {tier = utier, username = u.username or '?'}
-						end
+                        local utier = u.tier or 0
+                        local shouldShow = false
+                        if localTier == 99 and utier <= 4 then
+                            shouldShow = true
+                        elseif localTier == 4 and utier <= 3 then
+                            shouldShow = true
+                        end
+
+                        if shouldShow then
+                            newMap[uid] = {tier = utier, username = u.username or '?'}
+                        end
                     end
                 end
             end
@@ -608,13 +603,13 @@ do
 
             for uid, info in pairs(newMap) do
                 if not prev[uid] then
-                    vape:CreateNotification('[AEROV4] Injected', string.format('[T%d] %s joined', info.tier, info.username), 6)
+                    vape:CreateNotification('[AEROV4] Injected', string.format('[T%d] %s injected', info.tier, info.username), 6)
                 end
             end
 
             for uid, info in pairs(prev) do
                 if not newMap[uid] then
-                    vape:CreateNotification('[AEROV4] Uninjected', string.format('[T%d] %s left', info.tier, info.username), 8)
+                    vape:CreateNotification('[AEROV4] Uninjected', string.format('[T%d] %s uninjected', info.tier, info.username), 8)
                 end
             end
 
