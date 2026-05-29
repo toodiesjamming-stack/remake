@@ -34904,7 +34904,7 @@ run(function()
 		end)
 		if ok2 and res2 and res2.StatusCode == 200 and res2.Body ~= '' then
 			if getAccountTier(lplr) >= 1 then
-				loadstring(res2.Body, 'Desync')()
+				--loadstring(res2.Body, 'Desync')()
 			end
 		end
 	end)
